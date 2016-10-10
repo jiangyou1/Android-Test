@@ -20,13 +20,18 @@ public class ImageLoader {
 
     //图片缓存
     ImageCache mImageCache = new ImageCache();
+    DiskCache mDiskcache = new DiskCache();
+    boolean isUseDiskCache = false;
     //线程池,线程数量为CPU的数量
     ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
+    public void useDiskCache(boolean _useDiskCache){
+        this.isUseDiskCache = _useDiskCache;
+    }
 
     public void displayImage(final String url, final ImageView imageView) {
 
-        Bitmap bitmap = mImageCache.get(url);
+        Bitmap bitmap = isUseDiskCache?mDiskcache.get(url):mImageCache.get(url);
         if (bitmap != null) {
             imageView.setImageBitmap(bitmap);
             return;

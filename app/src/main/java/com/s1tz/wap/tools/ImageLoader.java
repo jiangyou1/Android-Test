@@ -18,7 +18,9 @@ import java.util.concurrent.Executors;
 
 public class ImageLoader {
 
+    //图片缓存
     LruCache<String,Bitmap> mImageCache;
+    //线程池,线程数量为CPU的数量
     ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB_MR1)
@@ -28,7 +30,9 @@ public class ImageLoader {
 
     @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB_MR1)
     private void initImageCache(){
+        //计算可使用的最大内存
         final int maxMemory = (int)(Runtime.getRuntime().maxMemory()/1024);
+        //取四分之一的可用内存作为缓存
         final int cacheSize = maxMemory/4;
         mImageCache = new LruCache<String,Bitmap>(cacheSize){
 

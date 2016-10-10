@@ -19,57 +19,45 @@ import java.util.concurrent.Executors;
 public class ImageLoader {
 
     //图片缓存
-    LruCache<String,Bitmap> mImageCache;
+    ImageCache mImageCache = new ImageCache();
     //线程池,线程数量为CPU的数量
     ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB_MR1)
-    public ImageLoader(){
-        initImageCache();
-    }
 
-    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB_MR1)
-    private void initImageCache(){
-        //计算可使用的最大内存
-        final int maxMemory = (int)(Runtime.getRuntime().maxMemory()/1024);
-        //取四分之一的可用内存作为缓存
-        final int cacheSize = maxMemory/4;
-        mImageCache = new LruCache<String,Bitmap>(cacheSize){
+    public void displayImage(final String url, final ImageView imageView) {
 
-            @Override
-            protected int sizeOf(String key, Bitmap value) {
-                return value.getRowBytes()*value.getHeight()/1024;
-            }
-        };
-    }
+        Bitmap bitmap = mImageCache.get(url);
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap);
+            return;
+        }
 
-    public void displayImage(final String url,final ImageView imageView){
         imageView.setTag(url);
-        mExecutorService.submit(new Runnable(){
+        mExecutorService.submit(new Runnable() {
 
             @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB_MR1)
             @Override
             public void run() {
                 Bitmap bitmap = downloadImage(url);
-                if(bitmap ==null){
+                if (bitmap == null) {
                     return;
                 }
-                if(imageView.getTag().equals(url)){
+                if (imageView.getTag().equals(url)) {
                     imageView.setImageBitmap(bitmap);
                 }
-                mImageCache.put(url,bitmap);
+                mImageCache.put(url, bitmap);
             }
         });
     }
 
-    public Bitmap downloadImage(String imageUrl){
+    public Bitmap downloadImage(String imageUrl) {
         Bitmap bitmap = null;
         try {
             URL url = new URL(imageUrl);
-            final HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             bitmap = BitmapFactory.decodeStream(conn.getInputStream());
             conn.disconnect();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return bitmap;

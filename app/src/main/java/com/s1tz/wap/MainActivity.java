@@ -12,7 +12,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView iv_first;
 
-    @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

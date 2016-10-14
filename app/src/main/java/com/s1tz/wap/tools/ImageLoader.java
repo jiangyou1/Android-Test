@@ -2,9 +2,7 @@ package com.s1tz.wap.tools;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.util.LruCache;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.net.HttpURLConnection;
@@ -13,59 +11,46 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Created by jiangyou on 16-10-9.
+ * author:jiangyou
+ * date:16-10-11
+ * desc:
  */
 
 public class ImageLoader {
 
-    //图片缓存
-    ImageCache mImageCache = new ImageCache();
-    DiskCache mDiskcache = new DiskCache();
-    DoubleCache mDoubleCache = new DoubleCache();
-    boolean isUseDoubleCache = false;
-    boolean isUseDiskCache = false;
-    //线程池,线程数量为CPU的数量
+    private ImageCache mImageCache = new MemoryCache();
     ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-    public void useDiskCache(boolean _useDiskCache) {
-        this.isUseDiskCache = _useDiskCache;
+
+    public void setImageCache(ImageCache _imageCahce) {
+        this.mImageCache = _imageCahce;
     }
 
-    public void useDoubleCache(boolean _useDoubleCache) {
-        this.isUseDoubleCache = _useDoubleCache;
-    }
-
-    public void displayImage(final String url, final ImageView imageView) {
-
-        Bitmap bitmap = null;
-
-        if (isUseDoubleCache) {
-            bitmap = mDoubleCache.get(url);
-        } else if (isUseDiskCache) {
-            bitmap = mDiskcache.get(url);
-        } else {
-            bitmap = mImageCache.get(url);
-        }
-
+    public void displayImage(String _url, ImageView _imageView) {
+        Bitmap bitmap = mImageCache.get(_url);
         if (bitmap != null) {
-            imageView.setImageBitmap(bitmap);
+            _imageView.setImageBitmap(bitmap);
             return;
         }
+        submitLoadRequest(_url, _imageView);
+    }
 
-        imageView.setTag(url);
+    private void submitLoadRequest(final String _url, final ImageView _imageView) {
+        _imageView.setTag(_url);
         mExecutorService.submit(new Runnable() {
-
-            @RequiresApi(api = Build.VERSION_CODES.HONEYCOMB_MR1)
             @Override
             public void run() {
-                Bitmap bitmap = downloadImage(url);
+                Bitmap bitmap = downloadImage(_url);
+
                 if (bitmap == null) {
                     return;
                 }
-                if (imageView.getTag().equals(url)) {
-                    imageView.setImageBitmap(bitmap);
+
+                if (_imageView.getTag().equals(_url)) {
+                    _imageView.setImageBitmap(bitmap);
                 }
-                mImageCache.put(url, bitmap);
+
+                mImageCache.put(_url, bitmap);
             }
         });
     }
@@ -78,7 +63,7 @@ public class ImageLoader {
             bitmap = BitmapFactory.decodeStream(conn.getInputStream());
             conn.disconnect();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("ImageLoader", e.toString());
         }
         return bitmap;
     }

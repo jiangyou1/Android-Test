@@ -1,40 +1,19 @@
 package com.s1tz.wap.tools;
 
+
 import android.graphics.Bitmap;
-import android.util.LruCache;
 
 /**
- * Created by jiangyou on 16-10-11.
+ * author:jiangyou
+ * date:16-10-11
+ * desc:缓存的接口
  */
 
-public class ImageCache {
+public interface ImageCache {
 
-    //图片LRU缓存
-    LruCache<String, Bitmap> mImageCache;
+    public Bitmap get(String url);
 
-    public ImageCache() {
-        initImageCache();
-    }
+    public void put(String url, Bitmap bitmap);
 
-    private void initImageCache() {
-        //计算可使用的最大内存
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        //取四分之一的可用内存作为缓存
-        final int cacheSize = maxMemory / 4;
-        mImageCache = new LruCache<String, Bitmap>(cacheSize) {
-            @Override
-            protected int sizeOf(String key, Bitmap value) {
-                return value.getRowBytes() * value.getHeight() / 1024;
-            }
-        };
-    }
-
-    public void put(String url, Bitmap bitmap) {
-        mImageCache.put(url, bitmap);
-    }
-
-    public Bitmap get(String url) {
-        return mImageCache.get(url);
-    }
 
 }

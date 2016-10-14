@@ -2,39 +2,43 @@ package com.s1tz.wap.tools;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Created by jiangyou on 16-10-11.
+ * author:jiangyou
+ * date:16-10-11
+ * desc:缓存到手机中
  */
 
-public class DiskCache {
+public class DiskCache implements ImageCache {
 
     static String cacheDir = "sdcard/cache/";
 
+    @Override
     public Bitmap get(String url) {
         return BitmapFactory.decodeFile(cacheDir + url);
     }
 
-    public void put(String url, Bitmap bmp) {
+    @Override
+    public void put(String url, Bitmap bitmap) {
         FileOutputStream fileOutputStream = null;
         try {
             fileOutputStream = new FileOutputStream(cacheDir + url);
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.e("DiskCache", e.toString());
         } finally {
             if (fileOutputStream != null) {
                 try {
                     fileOutputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e("DiskCache", e.toString());
                 }
             }
         }
     }
-
 }

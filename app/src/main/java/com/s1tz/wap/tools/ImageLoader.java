@@ -18,16 +18,15 @@ import java.util.concurrent.Executors;
 
 public class ImageLoader {
 
-    private ImageCache mImageCache = new MemoryCache();
-    ExecutorService mExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private ImageLoaderConfig mConfig;
 
-
-    public void setImageCache(ImageCache _imageCahce) {
-        this.mImageCache = _imageCahce;
+    public void init(ImageLoaderConfig config) {
+        mConfig = config;
+        checkConfig();
     }
 
     public void displayImage(String _url, ImageView _imageView) {
-        Bitmap bitmap = mImageCache.get(_url);
+        Bitmap bitmap = ImageLoaderConfig.get(_url);
         if (bitmap != null) {
             _imageView.setImageBitmap(bitmap);
             return;
@@ -36,6 +35,8 @@ public class ImageLoader {
     }
 
     private void submitLoadRequest(final String _url, final ImageView _imageView) {
+        _imageView.setImageResource(mLoadingImage);
+
         _imageView.setTag(_url);
         mExecutorService.submit(new Runnable() {
             @Override
@@ -43,6 +44,7 @@ public class ImageLoader {
                 Bitmap bitmap = downloadImage(_url);
 
                 if (bitmap == null) {
+                    _imageView.setImageResource(mLoadingFailedImage);
                     return;
                 }
 
